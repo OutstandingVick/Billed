@@ -32,3 +32,38 @@ const formatCurrency = (amount) => {
     maximumFractionDigits: 2,
   });
 };
+
+// Initial state for the invoice data
+const initialInvoiceData = {
+  invoiceNumber: 'INV-2024-001',
+  date: new Date().toISOString().substring(0, 10),
+  dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .substring(0, 10), // 30 days later
+  senderName: 'Frontend Pro Solutions',
+  senderAddress: '101 React Way, Dev City',
+  senderEmail: 'billing@prosolutions.com',
+  senderPhone: '+1 555-DEV-PROJ',
+  clientName: 'Innovate Global Inc.',
+  clientAddress: '200 Design Blvd, Tech Hub',
+  clientEmail: 'accounts@innovateglobal.com',
+  clientPhone: '+1 555-BUS-ACC',
+  items: [
+    {
+      id: 1,
+      description: 'UX/UI Wireframing (Hours)',
+      quantity: 20,
+      price: 75.0,
+    },
+    {
+      id: 2,
+      description: 'React Component Development',
+      quantity: 80,
+      price: 95.0,
+    },
+  ],
+  taxRate: 7.5, // Percentage
+  discount: 0, // Fixed amount discount
+  notes:
+    'Thank you for choosing Frontend Pro Solutions. Your timely payment is appreciated.',
+};
