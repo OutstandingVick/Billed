@@ -1,0 +1,34 @@
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
+import {
+  Settings,
+  Download,
+  Trash2,
+  Plus,
+  Sun,
+  Moon,
+  CreditCard,
+} from 'lucide-react';
+
+// NOTE: In a real-world React project, you would install these via npm (npm install jspdf html2canvas).
+// For this single-file environment, we assume they are loaded via external scripts in the HTML wrapper.
+// The functions are accessed globally: new jsPDF.jsPDF() and window.html2canvas()
+
+/**
+ * Utility function to format currency
+ * @param {number} amount
+ * @returns {string}
+ */
+const formatCurrency = (amount) => {
+  return (amount || 0).toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
