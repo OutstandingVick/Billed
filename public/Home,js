@@ -71,3 +71,6 @@ const initialInvoiceData = {
 const Header = ({ darkMode, toggleDarkMode }) => {
   const textColor = darkMode ? 'text-gray-100' : 'text-gray-900';
   const iconColor = darkMode ? 'text-indigo-400' : 'text-indigo-600';
+
+  return (
+    
