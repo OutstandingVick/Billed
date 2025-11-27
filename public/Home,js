@@ -104,3 +104,8 @@ const Header = ({ darkMode, toggleDarkMode }) => {
     </header>
   );
 };
+// ItemList Component
+const ItemList = ({ items, updateItem, addItem, removeItem, darkMode }) => {
+  const inputStyle = `w-full bg-transparent border-b ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'} focus:border-indigo-500 outline-none p-1 transition-colors`;
+  const headerStyle = `px-4 py-2 text-left font-semibold ${darkMode ? 'text-indigo-300 bg-gray-700' : 'text-indigo-700 bg-indigo-50'}`;
+  const rowStyle = `${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`;
