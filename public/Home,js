@@ -86,3 +86,11 @@ const Header = ({ darkMode, toggleDarkMode }) => {
         >
           {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
+        <button
+          className="p-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition duration-150 shadow-md"
+          aria-label="Settings"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+      </div>
+    </header>
