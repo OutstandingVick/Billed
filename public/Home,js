@@ -136,3 +136,13 @@ const ItemList = ({ items, updateItem, addItem, removeItem, darkMode }) => {
                     className={inputStyle}
                   />
                 </td>
+                <td className="p-2 border-b">
+                  <input
+                    type="number"
+                    value={item.quantity}
+                    onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value))}
+                    min="0"
+                    placeholder="0"
+                    className={`${inputStyle} text-right`}
+                  />
+                </td>
