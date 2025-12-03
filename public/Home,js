@@ -106,16 +106,26 @@ const Header = ({ darkMode, toggleDarkMode }) => {
 };
 // ItemList Component
 const ItemList = ({ items, updateItem, addItem, removeItem, darkMode }) => {
-  const inputStyle = `w-full bg-transparent border-b ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'} focus:border-indigo-500 outline-none p-1 transition-colors`;
-  const headerStyle = `px-4 py-2 text-left font-semibold ${darkMode ? 'text-indigo-300 bg-gray-700' : 'text-indigo-700 bg-indigo-50'}`;
-  const rowStyle = `${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`;
+  const inputStyle = `w-full bg-transparent border-b ${
+    darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'
+  } focus:border-indigo-500 outline-none p-1 transition-colors`;
+  const headerStyle = `px-4 py-2 text-left font-semibold ${
+    darkMode ? 'text-indigo-300 bg-gray-700' : 'text-indigo-700 bg-indigo-50'
+  }`;
+  const rowStyle = `${
+    darkMode
+      ? 'border-gray-700 hover:bg-gray-800'
+      : 'border-gray-200 hover:bg-gray-50'
+  }`;
 
-    return (
-    <div className="mt-8 overflow-x-auto">
-      <table className="min-w-full border-collapse border-spacing-0">
+  return (
+    <div className='mt-8 overflow-x-auto'>
+      <table className='min-w-full border-collapse border-spacing-0'>
         <thead>
           <tr>
-            <th className={`${headerStyle} w-1/2 rounded-tl-lg`}>Description</th>
+            <th className={`${headerStyle} w-1/2 rounded-tl-lg`}>
+              Description
+            </th>
             <th className={`${headerStyle} w-1/6 text-right`}>Qty</th>
             <th className={`${headerStyle} w-1/6 text-right`}>Price</th>
             <th className={`${headerStyle} w-1/6 text-right`}>Amount</th>
@@ -127,50 +137,74 @@ const ItemList = ({ items, updateItem, addItem, removeItem, darkMode }) => {
             const amount = item.quantity * item.price;
             return (
               <tr key={item.id} className={rowStyle}>
-                <td className="p-2 border-b">
+                <td className='p-2 border-b'>
                   <input
-                    type="text"
+                    type='text'
                     value={item.description}
-                    onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                    placeholder="Item description"
+                    onChange={(e) =>
+                      updateItem(item.id, 'description', e.target.value)
+                    }
+                    placeholder='Item description'
                     className={inputStyle}
                   />
                 </td>
-                <td className="p-2 border-b">
+                <td className='p-2 border-b'>
                   <input
-                    type="number"
+                    type='number'
                     value={item.quantity}
-                    onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value))}
-                    min="0"
-                    placeholder="0"
+                    onChange={(e) =>
+                      updateItem(
+                        item.id,
+                        'quantity',
+                        parseFloat(e.target.value)
+                      )
+                    }
+                    min='0'
+                    placeholder='0'
                     className={`${inputStyle} text-right`}
                   />
                 </td>
-                <td className="p-2 border-b">
+                <td className='p-2 border-b'>
                   <input
-                    type="number"
+                    type='number'
                     value={item.price}
-                    onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value))}
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
+                    onChange={(e) =>
+                      updateItem(item.id, 'price', parseFloat(e.target.value))
+                    }
+                    min='0'
+                    step='0.01'
+                    placeholder='0.00'
                     className={`${inputStyle} text-right`}
                   />
                 </td>
-                <td className={`p-2 border-b font-medium text-right ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                <td
+                  className={`p-2 border-b font-medium text-right ${
+                    darkMode ? 'text-gray-100' : 'text-gray-900'
+                  }`}
+                >
                   {formatCurrency(amount)}
                 </td>
-                <td className="p-2 border-b text-center">
+                <td className='p-2 border-b text-center'>
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="text-red-500 hover:text-red-700 p-1 rounded transition duration-150"
-                    aria-label="Remove item"
+                    className='text-red-500 hover:text-red-700 p-1 rounded transition duration-150'
+                    aria-label='Remove item'
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className='w-4 h-4' />
                   </button>
                 </td>
               </tr>
             );
           })}
-          </tbody>
+        </tbody>
       </table>
+      <button
+        onClick={addItem}
+        className='mt-4 flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-[1.01] shadow-md
+                   bg-indigo-500 text-white hover:bg-indigo-600'
+      >
+        <Plus className='w-4 h-4 mr-2' /> Add Item
+      </button>
+    </div>
+  );
+};
