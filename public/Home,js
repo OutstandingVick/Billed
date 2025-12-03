@@ -172,3 +172,5 @@ const ItemList = ({ items, updateItem, addItem, removeItem, darkMode }) => {
               </tr>
             );
           })}
+          </tbody>
+      </table>
