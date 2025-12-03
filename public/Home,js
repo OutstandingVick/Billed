@@ -208,3 +208,9 @@ const ItemList = ({ items, updateItem, addItem, removeItem, darkMode }) => {
     </div>
   );
 };
+
+// Totals Component
+const Totals = ({ totals, taxRate, discount, updateField, darkMode }) => {
+  const labelStyle = `${darkMode ? 'text-gray-300' : 'text-gray-600'}`;
+  const valueStyle = `font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`;
+  const inputStyle = `w-20 text-right bg-transparent border-b ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'} focus:border-indigo-500 outline-none`;
