@@ -214,3 +214,13 @@ const Totals = ({ totals, taxRate, discount, updateField, darkMode }) => {
   const labelStyle = `${darkMode ? 'text-gray-300' : 'text-gray-600'}`;
   const valueStyle = `font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`;
   const inputStyle = `w-20 text-right bg-transparent border-b ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'} focus:border-indigo-500 outline-none`;
+
+   return (
+    <div className="flex justify-end mt-8">
+      <div className="w-full sm:w-1/2 lg:w-1/3 p-4 rounded-lg shadow-xl" style={{ backgroundColor: darkMode ? '#1f2937' : '#f9fafb' }}>
+        <div className="space-y-3">
+          {/* Subtotal */}
+          <div className="flex justify-between items-center">
+            <span className={labelStyle}>Subtotal:</span>
+            <span className={valueStyle}>{formatCurrency(totals.subtotal)}</span>
+          </div>
