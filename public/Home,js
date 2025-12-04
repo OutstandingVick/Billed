@@ -249,3 +249,9 @@ const Totals = ({ totals, taxRate, discount, updateField, darkMode }) => {
               className={inputStyle}
             />
           </div>
+
+          {/* Tax Amount */}
+          <div className="flex justify-between items-center border-t pt-3" style={{ borderColor: darkMode ? '#374151' : '#e5e7eb' }}>
+            <span className={labelStyle}>Tax Amount:</span>
+            <span className={valueStyle}>{formatCurrency(totals.taxAmount)}</span>
+          </div>
