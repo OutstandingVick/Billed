@@ -236,3 +236,16 @@ const Totals = ({ totals, taxRate, discount, updateField, darkMode }) => {
               className={inputStyle}
             />
           </div>
+
+          {/* Tax Rate Input */}
+          <div className="flex justify-between items-center">
+            <span className={labelStyle}>Tax Rate (%):</span>
+            <input
+              type="number"
+              value={taxRate}
+              onChange={(e) => updateField('taxRate', parseFloat(e.target.value) || 0)}
+              min="0"
+              step="0.1"
+              className={inputStyle}
+            />
+          </div>
