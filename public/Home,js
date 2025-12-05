@@ -296,3 +296,12 @@ const Totals = ({ totals, taxRate, discount, updateField, darkMode }) => {
     </div>
   );
 };
+
+// General Info Card Component
+const InfoCard = ({ title, data, updateField, fieldMap, darkMode }) => {
+  const cardStyle = `p-6 rounded-xl shadow-lg transition-colors duration-300 ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'}`;
+  const labelStyle = `${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm font-semibold uppercase mb-1`;
+  const inputStyle = `w-full bg-transparent border-b ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'} focus:border-indigo-500 outline-none py-1 transition-colors`;
+  const titleStyle = `text-lg font-bold mb-4 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`;
+
+  
