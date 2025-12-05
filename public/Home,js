@@ -332,3 +332,15 @@ const InfoCard = ({ title, data, updateField, fieldMap, darkMode }) => {
     </div>
   );
 };
+
+const App = () => {
+  const [invoiceData, setInvoiceData] = useState(initialInvoiceData);
+  const [nextItemId, setNextItemId] = useState(3);
+  const [darkMode, setDarkMode] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const invoiceRef = useRef(null);
+  const [message, setMessage] = useState('');
+
+  const bodyStyle = `min-h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-900 text-gray-200' : 'bg-gray-50 text-gray-800'}`;
+  const invoiceAreaStyle = `p-8 max-w-4xl mx-auto rounded-lg shadow-2xl transition-all duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'}`;
+
