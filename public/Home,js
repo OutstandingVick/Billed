@@ -344,3 +344,12 @@ const App = () => {
   const bodyStyle = `min-h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-900 text-gray-200' : 'bg-gray-50 text-gray-800'}`;
   const invoiceAreaStyle = `p-8 max-w-4xl mx-auto rounded-lg shadow-2xl transition-all duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'}`;
 
+  // Memoize the calculation of totals
+  const totals = useMemo(() => {
+    const subtotal = invoiceData.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    const discountAmount = Math.max(0, invoiceData.discount || 0);
+    const taxableBase = Math.max(0, subtotal - discountAmount);
+    const taxAmount = (taxableBase * (invoiceData.taxRate || 0)) / 100;
+    const grandTotal = taxableBase + taxAmount;
+    return { subtotal, taxAmount, grandTotal };
+  }, [invoiceData.items, invoiceData.taxRate, invoiceData.discount]);
