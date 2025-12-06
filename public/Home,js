@@ -368,3 +368,22 @@ const App = () => {
       ),
     }));
   }, []);
+
+  // Adds a new blank item to the list
+  const addItem = useCallback(() => {
+    setInvoiceData(prev => ({
+      ...prev,
+      items: [...prev.items, { id: nextItemId, description: '', quantity: 1, price: 0.00 }],
+    }));
+    setNextItemId(prev => prev + 1);
+  }, [nextItemId]);
+
+  // Removes an item from the list
+  const removeItem = useCallback((id) => {
+    setInvoiceData(prev => ({
+      ...prev,
+      items: prev.items.filter(item => item.id !== id),
+    }));
+  }, []);
+
+  
