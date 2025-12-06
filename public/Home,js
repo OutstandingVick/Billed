@@ -403,3 +403,32 @@ const App = () => {
         setPdfLoading(false);
         return;
       }
+
+      // 1. Capture the invoice element using html2canvas
+      const canvas = await window.html2canvas(input, {
+        scale: 2, // Higher scale for better resolution in PDF
+        useCORS: true,
+        logging: false,
+        backgroundColor: darkMode ? '#111827' : '#ffffff', // Match the background
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4'); // 'p' for portrait, 'mm' for units, 'a4' size
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      let position = 0;
+      let heightLeft = imgHeight;
+
+      // 2. Add image to PDF, handling page breaks if necessary
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
