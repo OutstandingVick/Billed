@@ -432,3 +432,16 @@ const App = () => {
         pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
         heightLeft -= pdfHeight;
       }
+
+      // 3. Save the PDF
+      pdf.save(`Invoice-${invoiceData.invoiceNumber}.pdf`);
+      setMessage('Invoice successfully exported to PDF!');
+
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      setMessage(`PDF export failed. Error: ${error.message}`);
+    } finally {
+      setPdfLoading(false);
+      setTimeout(() => setMessage(''), 5000); // Clear message after 5 seconds
+    }
+  };
