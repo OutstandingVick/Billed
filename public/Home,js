@@ -386,4 +386,20 @@ const App = () => {
     }));
   }, []);
 
-  
+  // PDF Export Logic
+  const handleExportPdf = async () => {
+    if (typeof window.html2canvas !== 'function' || typeof window.jspdf.jsPDF !== 'function') {
+      setMessage('PDF libraries are not loaded. Cannot export. (Check console)');
+      return;
+    }
+
+    setPdfLoading(true);
+    setMessage('');
+
+    try {
+      const input = invoiceRef.current;
+      if (!input) {
+        setMessage('Invoice element not found.');
+        setPdfLoading(false);
+        return;
+      }
