@@ -353,3 +353,18 @@ const App = () => {
     const grandTotal = taxableBase + taxAmount;
     return { subtotal, taxAmount, grandTotal };
   }, [invoiceData.items, invoiceData.taxRate, invoiceData.discount]);
+
+  // General updater function for top-level fields
+  const updateField = useCallback((key, value) => {
+    setInvoiceData(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  // Updater function for item details
+  const updateItem = useCallback((id, key, value) => {
+    setInvoiceData(prev => ({
+      ...prev,
+      items: prev.items.map(item =>
+        item.id === id ? { ...item, [key]: value } : item
+      ),
+    }));
+  }, []);
