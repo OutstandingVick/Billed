@@ -496,4 +496,26 @@ const App = () => {
                 placeholder="Invoice Number"
               />
             </div>
+
+            <div className={`text-right text-sm space-y-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              <div className="flex justify-end">
+                <span className="font-semibold mr-2">Date:</span>
+                <input
+                  type="date"
+                  value={invoiceData.date}
+                  onChange={(e) => updateField('date', e.target.value)}
+                  className={`bg-transparent border-b ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'} focus:border-indigo-500 outline-none`}
+                />
+              </div>
+              <div className="flex justify-end">
+                <span className="font-semibold mr-2">Due Date:</span>
+                <input
+                  type="date"
+                  value={invoiceData.dueDate}
+                  onChange={(e) => updateField('dueDate', e.target.value)}
+                  className={`bg-transparent border-b ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'} focus:border-indigo-500 outline-none`}
+                />
+              </div>
+            </div>
+          </div>
         
