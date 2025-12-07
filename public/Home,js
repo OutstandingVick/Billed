@@ -518,4 +518,32 @@ const App = () => {
               </div>
             </div>
           </div>
+
+          {/* Sender and Client Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <InfoCard
+              title="Bill From"
+              data={invoiceData}
+              updateField={updateField}
+              fieldMap={{
+                senderName: 'Your Company Name',
+                senderAddress: 'Address',
+                senderEmail: 'Email',
+                senderPhone: 'Phone',
+              }}
+              darkMode={darkMode}
+            />
+            <InfoCard
+              title="Bill To"
+              data={invoiceData}
+              updateField={updateField}
+              fieldMap={{
+                clientName: 'Client Company Name',
+                clientAddress: 'Address',
+                clientEmail: 'Email',
+                clientPhone: 'Phone',
+              }}
+              darkMode={darkMode}
+            />
+          </div>
         
