@@ -568,4 +568,13 @@ const App = () => {
                 placeholder="E.g., Payment due within 30 days. Wire transfer details:..."
               />
             </div>
+
+            {/* Totals Section */}
+            <Totals
+              totals={totals}
+              taxRate={invoiceData.taxRate}
+              discount={invoiceData.discount}
+              updateField={updateField}
+              darkMode={darkMode}
+            />
         
