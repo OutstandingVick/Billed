@@ -1,20 +1,660 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-import Home from './Home';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
+import {
+  Settings,
+  Download,
+  Trash2,
+  Plus,
+  Sun,
+  Moon,
+  CreditCard,
+} from 'lucide-react';
 
-function App() {
+// NOTE: In a real-world React project, you would install these via npm (npm install jspdf html2canvas).
+// For this single-file environment, we assume they are loaded via external scripts in the HTML wrapper.
+// The functions are accessed globally: new jsPDF.jsPDF() and window.html2canvas()
+
+/**
+ * Utility function to format currency
+ * @param {number} amount
+ * @returns {string}
+ */
+const formatCurrency = (amount) => {
+  return (amount || 0).toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+// Initial state for the invoice data
+const initialInvoiceData = {
+  invoiceNumber: 'INV-2024-001',
+  date: new Date().toISOString().substring(0, 10),
+  dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .substring(0, 10), // 30 days later
+  senderName: 'Frontend Pro Solutions',
+  senderAddress: '101 React Way, Dev City',
+  senderEmail: 'billing@prosolutions.com',
+  senderPhone: '+1 555-DEV-PROJ',
+  clientName: 'Innovate Global Inc.',
+  clientAddress: '200 Design Blvd, Tech Hub',
+  clientEmail: 'accounts@innovateglobal.com',
+  clientPhone: '+1 555-BUS-ACC',
+  items: [
+    {
+      id: 1,
+      description: 'UX/UI Wireframing (Hours)',
+      quantity: 20,
+      price: 75.0,
+    },
+    {
+      id: 2,
+      description: 'React Component Development',
+      quantity: 80,
+      price: 95.0,
+    },
+  ],
+  taxRate: 7.5, // Percentage
+  discount: 0, // Fixed amount discount
+  notes:
+    'Thank you for choosing Frontend Pro Solutions. Your timely payment is appreciated.',
+};
+
+const Header = ({ darkMode, toggleDarkMode }) => {
+  const textColor = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const iconColor = darkMode ? 'text-indigo-400' : 'text-indigo-600';
+
   return (
-    <Router>
-      {/* <ScrollToTop /> */}
-      <div className='min-h-screen dark:bg-dain bg-main bg-center px-5 md:px-20'>
-        <div className='p-0'>
-          <Routes>
-            <Route path='/' element={<Home />} />
-          </Routes>
+    <header className='flex justify-between items-center p-4 border-b border-gray-700/10'>
+      <h1 className={`text-2xl font-extrabold ${textColor} flex items-center`}>
+        <CreditCard className={`w-6 h-6 mr-3 ${iconColor}`} />
+        Invoice Generator
+      </h1>
+      <div className='flex items-center space-x-4'>
+        <button
+          onClick={toggleDarkMode}
+          className={`p-2 rounded-full transition-all duration-300 ${
+            darkMode
+              ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300'
+              : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+          }`}
+          aria-label='Toggle Dark Mode'
+        >
+          {darkMode ? (
+            <Sun className='w-5 h-5' />
+          ) : (
+            <Moon className='w-5 h-5' />
+          )}
+        </button>
+        <button
+          className='p-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition duration-150 shadow-md'
+          aria-label='Settings'
+        >
+          <Settings className='w-5 h-5' />
+        </button>
+      </div>
+    </header>
+  );
+};
+
+// ItemList Component
+const ItemList = ({ items, updateItem, addItem, removeItem, darkMode }) => {
+  const inputStyle = `w-full bg-transparent border-b ${
+    darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'
+  } focus:border-indigo-500 outline-none p-1 transition-colors`;
+  const headerStyle = `px-4 py-2 text-left font-semibold ${
+    darkMode ? 'text-indigo-300 bg-gray-700' : 'text-indigo-700 bg-indigo-50'
+  }`;
+  const rowStyle = `${
+    darkMode
+      ? 'border-gray-700 hover:bg-gray-800'
+      : 'border-gray-200 hover:bg-gray-50'
+  }`;
+
+  return (
+    <div className='mt-8 overflow-x-auto'>
+      <table className='min-w-full border-collapse border-spacing-0'>
+        <thead>
+          <tr>
+            <th className={`${headerStyle} w-1/2 rounded-tl-lg`}>
+              Description
+            </th>
+            <th className={`${headerStyle} w-1/6 text-right`}>Qty</th>
+            <th className={`${headerStyle} w-1/6 text-right`}>Price</th>
+            <th className={`${headerStyle} w-1/6 text-right`}>Amount</th>
+            <th className={`${headerStyle} w-10 rounded-tr-lg`}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item, index) => {
+            const amount = item.quantity * item.price;
+            return (
+              <tr key={item.id} className={rowStyle}>
+                <td className='p-2 border-b'>
+                  <input
+                    type='text'
+                    value={item.description}
+                    onChange={(e) =>
+                      updateItem(item.id, 'description', e.target.value)
+                    }
+                    placeholder='Item description'
+                    className={inputStyle}
+                  />
+                </td>
+                <td className='p-2 border-b'>
+                  <input
+                    type='number'
+                    value={item.quantity}
+                    onChange={(e) =>
+                      updateItem(
+                        item.id,
+                        'quantity',
+                        parseFloat(e.target.value)
+                      )
+                    }
+                    min='0'
+                    placeholder='0'
+                    className={`${inputStyle} text-right`}
+                  />
+                </td>
+                <td className='p-2 border-b'>
+                  <input
+                    type='number'
+                    value={item.price}
+                    onChange={(e) =>
+                      updateItem(item.id, 'price', parseFloat(e.target.value))
+                    }
+                    min='0'
+                    step='0.01'
+                    placeholder='0.00'
+                    className={`${inputStyle} text-right`}
+                  />
+                </td>
+                <td
+                  className={`p-2 border-b font-medium text-right ${
+                    darkMode ? 'text-gray-100' : 'text-gray-900'
+                  }`}
+                >
+                  {formatCurrency(amount)}
+                </td>
+                <td className='p-2 border-b text-center'>
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className='text-red-500 hover:text-red-700 p-1 rounded transition duration-150'
+                    aria-label='Remove item'
+                  >
+                    <Trash2 className='w-4 h-4' />
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <button
+        onClick={addItem}
+        className='mt-4 flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-[1.01] shadow-md
+                   bg-indigo-500 text-white hover:bg-indigo-600'
+      >
+        <Plus className='w-4 h-4 mr-2' /> Add Item
+      </button>
+    </div>
+  );
+};
+
+// Totals Component
+const Totals = ({ totals, taxRate, discount, updateField, darkMode }) => {
+  const labelStyle = `${darkMode ? 'text-gray-300' : 'text-gray-600'}`;
+  const valueStyle = `font-medium ${
+    darkMode ? 'text-gray-100' : 'text-gray-900'
+  }`;
+  const inputStyle = `w-20 text-right bg-transparent border-b ${
+    darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'
+  } focus:border-indigo-500 outline-none`;
+
+  return (
+    <div className='flex justify-end mt-8'>
+      <div
+        className='w-full sm:w-1/2 lg:w-1/3 p-4 rounded-lg shadow-xl'
+        style={{ backgroundColor: darkMode ? '#1f2937' : '#f9fafb' }}
+      >
+        <div className='space-y-3'>
+          {/* Subtotal */}
+          <div className='flex justify-between items-center'>
+            <span className={labelStyle}>Subtotal:</span>
+            <span className={valueStyle}>
+              {formatCurrency(totals.subtotal)}
+            </span>
+          </div>
+
+          {/* Discount Input */}
+          <div className='flex justify-between items-center'>
+            <span className={labelStyle}>Discount ($):</span>
+            <input
+              type='number'
+              value={discount}
+              onChange={(e) =>
+                updateField('discount', parseFloat(e.target.value) || 0)
+              }
+              min='0'
+              step='0.01'
+              className={inputStyle}
+            />
+          </div>
+
+          {/* Tax Rate Input */}
+          <div className='flex justify-between items-center'>
+            <span className={labelStyle}>Tax Rate (%):</span>
+            <input
+              type='number'
+              value={taxRate}
+              onChange={(e) =>
+                updateField('taxRate', parseFloat(e.target.value) || 0)
+              }
+              min='0'
+              step='0.1'
+              className={inputStyle}
+            />
+          </div>
+
+          {/* Tax Amount */}
+          <div
+            className='flex justify-between items-center border-t pt-3'
+            style={{ borderColor: darkMode ? '#374151' : '#e5e7eb' }}
+          >
+            <span className={labelStyle}>Tax Amount:</span>
+            <span className={valueStyle}>
+              {formatCurrency(totals.taxAmount)}
+            </span>
+          </div>
+
+          {/* Grand Total */}
+          <div className='flex justify-between items-center pt-3 border-t border-indigo-300'>
+            <span
+              className={`text-xl font-bold ${
+                darkMode ? 'text-indigo-400' : 'text-indigo-700'
+              }`}
+            >
+              Total Due:
+            </span>
+            <span
+              className={`text-xl font-extrabold ${
+                darkMode ? 'text-yellow-300' : 'text-red-600'
+              }`}
+            >
+              {formatCurrency(totals.grandTotal)}
+            </span>
+          </div>
         </div>
       </div>
-    </Router>
+    </div>
   );
-}
+};
+
+// General Info Card Component
+const InfoCard = ({ title, data, updateField, fieldMap, darkMode }) => {
+  const cardStyle = `p-6 rounded-xl shadow-lg transition-colors duration-300 ${
+    darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'
+  }`;
+  const labelStyle = `${
+    darkMode ? 'text-gray-400' : 'text-gray-500'
+  } text-sm font-semibold uppercase mb-1`;
+  const inputStyle = `w-full bg-transparent border-b ${
+    darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-300 text-gray-900'
+  } focus:border-indigo-500 outline-none py-1 transition-colors`;
+  const titleStyle = `text-lg font-bold mb-4 ${
+    darkMode ? 'text-indigo-400' : 'text-indigo-600'
+  }`;
+
+  return (
+    <div className={cardStyle}>
+      <h2 className={titleStyle}>{title}</h2>
+      {Object.entries(fieldMap).map(([key, label]) => (
+        <div key={key} className='mb-4'>
+          <label className={labelStyle} htmlFor={key}>
+            {label}
+          </label>
+          <input
+            type={key.includes('date') ? 'date' : 'text'}
+            id={key}
+            value={data[key] || ''}
+            onChange={(e) => updateField(key, e.target.value)}
+            className={inputStyle}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const App = () => {
+  const [invoiceData, setInvoiceData] = useState(initialInvoiceData);
+  const [nextItemId, setNextItemId] = useState(3);
+  const [darkMode, setDarkMode] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const invoiceRef = useRef(null);
+  const [message, setMessage] = useState('');
+
+  const bodyStyle = `min-h-screen transition-colors duration-500 ${
+    darkMode ? 'bg-gray-900 text-gray-200' : 'bg-gray-50 text-gray-800'
+  }`;
+  const invoiceAreaStyle = `p-8 max-w-4xl mx-auto rounded-lg shadow-2xl transition-all duration-300 ${
+    darkMode ? 'bg-gray-800' : 'bg-white'
+  }`;
+
+  // Memoize the calculation of totals
+  const totals = useMemo(() => {
+    const subtotal = invoiceData.items.reduce(
+      (sum, item) => sum + item.quantity * item.price,
+      0
+    );
+    const discountAmount = Math.max(0, invoiceData.discount || 0);
+    const taxableBase = Math.max(0, subtotal - discountAmount);
+    const taxAmount = (taxableBase * (invoiceData.taxRate || 0)) / 100;
+    const grandTotal = taxableBase + taxAmount;
+    return { subtotal, taxAmount, grandTotal };
+  }, [invoiceData.items, invoiceData.taxRate, invoiceData.discount]);
+
+  // General updater function for top-level fields
+  const updateField = useCallback((key, value) => {
+    setInvoiceData((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  // Updater function for item details
+  const updateItem = useCallback((id, key, value) => {
+    setInvoiceData((prev) => ({
+      ...prev,
+      items: prev.items.map((item) =>
+        item.id === id ? { ...item, [key]: value } : item
+      ),
+    }));
+  }, []);
+
+  // Adds a new blank item to the list
+  const addItem = useCallback(() => {
+    setInvoiceData((prev) => ({
+      ...prev,
+      items: [
+        ...prev.items,
+        { id: nextItemId, description: '', quantity: 1, price: 0.0 },
+      ],
+    }));
+    setNextItemId((prev) => prev + 1);
+  }, [nextItemId]);
+
+  // Removes an item from the list
+  const removeItem = useCallback((id) => {
+    setInvoiceData((prev) => ({
+      ...prev,
+      items: prev.items.filter((item) => item.id !== id),
+    }));
+  }, []);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
+
+  // PDF Export Logic
+  const handleExportPdf = async () => {
+    if (
+      typeof window.html2canvas !== 'function' ||
+      typeof window.jspdf.jsPDF !== 'function'
+    ) {
+      setMessage(
+        'PDF libraries are not loaded. Cannot export. (Check console)'
+      );
+      return;
+    }
+
+    setPdfLoading(true);
+    setMessage('');
+
+    try {
+      const input = invoiceRef.current;
+      if (!input) {
+        setMessage('Invoice element not found.');
+        setPdfLoading(false);
+        return;
+      }
+
+      // 1. Capture the invoice element using html2canvas
+      const canvas = await window.html2canvas(input, {
+        scale: 2, // Higher scale for better resolution in PDF
+        useCORS: true,
+        logging: false,
+        backgroundColor: darkMode ? '#111827' : '#ffffff', // Match the background
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4'); // 'p' for portrait, 'mm' for units, 'a4' size
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      let position = 0;
+      let heightLeft = imgHeight;
+
+      // 2. Add image to PDF, handling page breaks if necessary
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      // 3. Save the PDF
+      pdf.save(`Invoice-${invoiceData.invoiceNumber}.pdf`);
+      setMessage('Invoice successfully exported to PDF!');
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      setMessage(`PDF export failed. Error: ${error.message}`);
+    } finally {
+      setPdfLoading(false);
+      setTimeout(() => setMessage(''), 5000); // Clear message after 5 seconds
+    }
+  };
+
+  return (
+    <div className={bodyStyle}>
+      <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+
+      <main className='container mx-auto p-4 sm:p-8'>
+        {/* Action Bar */}
+        <div className='flex justify-end mb-6'>
+          <button
+            onClick={handleExportPdf}
+            disabled={pdfLoading}
+            className={`flex items-center px-6 py-3 font-semibold rounded-lg transition-all duration-300 shadow-xl transform hover:scale-[1.02]
+                       ${
+                         pdfLoading
+                           ? 'bg-gray-400 cursor-not-allowed'
+                           : 'bg-green-600 text-white hover:bg-green-700'
+                       }`}
+          >
+            {pdfLoading ? (
+              <>
+                <svg
+                  className='animate-spin -ml-1 mr-3 h-5 w-5 text-white'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                >
+                  <circle
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                  ></circle>
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  ></path>
+                </svg>
+                Generating PDF...
+              </>
+            ) : (
+              <>
+                <Download className='w-5 h-5 mr-2' /> Download Invoice (PDF)
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Status Message Box */}
+        {message && (
+          <div className='mb-4 p-3 bg-indigo-100 text-indigo-800 rounded-lg border border-indigo-200'>
+            {message}
+          </div>
+        )}
+
+        {/* Invoice Body - The area to be captured by html2canvas */}
+        <div ref={invoiceRef} className={invoiceAreaStyle} id='invoice-capture'>
+          {/* Invoice Header Details */}
+          <div className='flex justify-between items-start mb-10'>
+            <div>
+              <h2
+                className={`text-4xl font-extrabold ${
+                  darkMode ? 'text-indigo-400' : 'text-indigo-700'
+                } mb-2`}
+              >
+                INVOICE
+              </h2>
+              <input
+                type='text'
+                value={invoiceData.invoiceNumber}
+                onChange={(e) => updateField('invoiceNumber', e.target.value)}
+                className={`text-xl font-semibold bg-transparent border-b ${
+                  darkMode
+                    ? 'border-gray-600 text-gray-200'
+                    : 'border-gray-300 text-gray-900'
+                } focus:border-indigo-500 outline-none`}
+                placeholder='Invoice Number'
+              />
+            </div>
+
+            <div
+              className={`text-right text-sm space-y-1 ${
+                darkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}
+            >
+              <div className='flex justify-end'>
+                <span className='font-semibold mr-2'>Date:</span>
+                <input
+                  type='date'
+                  value={invoiceData.date}
+                  onChange={(e) => updateField('date', e.target.value)}
+                  className={`bg-transparent border-b ${
+                    darkMode
+                      ? 'border-gray-600 text-gray-200'
+                      : 'border-gray-300 text-gray-900'
+                  } focus:border-indigo-500 outline-none`}
+                />
+              </div>
+              <div className='flex justify-end'>
+                <span className='font-semibold mr-2'>Due Date:</span>
+                <input
+                  type='date'
+                  value={invoiceData.dueDate}
+                  onChange={(e) => updateField('dueDate', e.target.value)}
+                  className={`bg-transparent border-b ${
+                    darkMode
+                      ? 'border-gray-600 text-gray-200'
+                      : 'border-gray-300 text-gray-900'
+                  } focus:border-indigo-500 outline-none`}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Sender and Client Details */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-8 mb-10'>
+            <InfoCard
+              title='Bill From'
+              data={invoiceData}
+              updateField={updateField}
+              fieldMap={{
+                senderName: 'Your Company Name',
+                senderAddress: 'Address',
+                senderEmail: 'Email',
+                senderPhone: 'Phone',
+              }}
+              darkMode={darkMode}
+            />
+            <InfoCard
+              title='Bill To'
+              data={invoiceData}
+              updateField={updateField}
+              fieldMap={{
+                clientName: 'Client Company Name',
+                clientAddress: 'Address',
+                clientEmail: 'Email',
+                clientPhone: 'Phone',
+              }}
+              darkMode={darkMode}
+            />
+          </div>
+
+          {/* Item List */}
+          <ItemList
+            items={invoiceData.items}
+            updateItem={updateItem}
+            addItem={addItem}
+            removeItem={removeItem}
+            darkMode={darkMode}
+          />
+
+          {/* Totals and Notes */}
+          <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12'>
+            {/* Notes Section */}
+            <div className='lg:col-span-2'>
+              <h3
+                className={`text-md font-semibold mb-2 ${
+                  darkMode ? 'text-indigo-300' : 'text-indigo-700'
+                }`}
+              >
+                Notes / Payment Terms
+              </h3>
+              <textarea
+                value={invoiceData.notes}
+                onChange={(e) => updateField('notes', e.target.value)}
+                className={`w-full h-32 p-3 rounded-lg border ${
+                  darkMode
+                    ? 'bg-gray-700 border-gray-600 text-gray-200'
+                    : 'bg-gray-50 border-gray-300 text-gray-800'
+                } focus:border-indigo-500 outline-none transition-colors`}
+                placeholder='E.g., Payment due within 30 days. Wire transfer details:...'
+              />
+            </div>
+
+            {/* Totals Section */}
+            <Totals
+              totals={totals}
+              taxRate={invoiceData.taxRate}
+              discount={invoiceData.discount}
+              updateField={updateField}
+              darkMode={darkMode}
+            />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// The following script tags would be included in the HTML file surrounding this React component
+// to load the necessary PDF generation libraries globally.
+/*
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+*/
 
 export default App;
